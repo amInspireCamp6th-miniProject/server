@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop, 'develop-*']
+  push:
+    branches: [main, develop, 'develop-*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 내려받기
+        uses: actions/checkout@v4
+
+      - name: JDK 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle 설정
+        uses: gradle/actions/setup-gradle@v4 # Gradle 캐시 + wrapper 검증
+
+      # gradlew는 실행 권한(100755)이 저장된 상태로 커밋되어 있음. 권한이 빠진 경우를 대비한 안전장치
+      - name: gradlew 실행 권한 확인
+        run: chmod +x gradlew
+
+      # 포맷/린트 도구(Spotless, Checkstyle 등)를 도입하면 주석 해제
+      # - name: 포맷 검사
+      #   run: ./gradlew spotlessCheck
+
+      - name: 테스트
+        run: ./gradlew test
+
+      - name: 빌드
+        run: ./gradlew build -x test
+
+      - name: 테스트 리포트 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: build/reports/tests/test
