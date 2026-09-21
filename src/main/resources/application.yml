@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: server
+  # DB 접속 정보는 환경변수로 주입합니다. (값을 이 파일에 직접 쓰지 않음)
+  # 로컬에서는 application-local.yml(커밋 금지)을 만들어 덮어써도 됩니다.
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}

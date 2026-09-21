@@ -1,0 +1,8 @@
+# 로컬 실행용 설정 예시입니다.
+# 이 파일을 application-local.yml로 복사한 뒤 실제 값으로 채워 주세요.
+# application-local.yml은 .gitignore에 등록되어 커밋되지 않습니다.
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/{DB이름}
+    username: {계정}
+    password: {비밀번호}
