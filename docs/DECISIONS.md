@@ -25,8 +25,12 @@
 | D-14 | 브랜치 전략 | ✅ `feat/*`·`fix/*` → `develop-<이름>`(개인 통합, 백엔드 3인) → `develop` → `main`. 브랜치명은 소문자와 하이픈 | [COMMIT_CONVENTION](conventions/COMMIT_CONVENTION.md) |
 | D-15 | 초기 세팅 반영 | ✅ 프로젝트 초기 세팅(문서·CI·Spring Boot 골격)은 작업 브랜치에서 `main`으로 직접 머지. 이후 `develop`과 개인 브랜치는 `main`으로 fast-forward | [COMMIT_CONVENTION](conventions/COMMIT_CONVENTION.md) |
 | D-16 | DB | ✅ MariaDB (드라이버 `org.mariadb.jdbc:mariadb-java-client`). 테스트는 H2 메모리 DB(MySQL 호환 모드) | Notion 「테이블 명세서」 |
+| D-17 | 소비기한 정책 | ✅ 남은 일수 < 0은 만료, 0~5일은 임박, 6일 이상은 일반. 만료 식재료는 임박 목록에서 제외 | - |
+| D-18 | 공통 예외 처리 | ✅ `ErrorCode` / `CustomException` / `ErrorResponse` / `GlobalExceptionHandler` 사용. 존재하지 않는 리소스 조회는 404 Not Found, 기본 오류 응답 필드는 `code`와 `message` | - |
 
 ## 논의 필요: 공통 (백엔드 + 프론트엔드)
+
+> C-11은 D-17에서 확정되었습니다. C-06의 오류 응답 부분은 D-18에서 확정되었고, 성공 응답 형식은 계속 논의가 필요합니다.
 
 | ID | 안건 | 선택지 / 제안 | 영향 범위 |
 | --- | --- | --- | --- |
