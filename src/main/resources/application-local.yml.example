@@ -6,3 +6,11 @@ spring:
     url: jdbc:mariadb://localhost:3306/{DB이름}
     username: {계정}
     password: {비밀번호}
+
+# 네이버 CLOVA OCR Builder에서 발급받은 값입니다.
+clova:
+  ocr:
+    invoke-url: {CLOVA OCR Invoke URL}
+    secret-key: {CLOVA OCR Secret Key}
+    # 무료 100회를 넘지 않도록 API Gateway의 월 90회 제한보다 낮게 둡니다.
+    monthly-limit: 80
