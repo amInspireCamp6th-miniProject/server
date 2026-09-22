@@ -34,4 +34,29 @@ class ExpirationPolicyTest {
     void reportsFutureDateAsNotExpired() {
         assertFalse(policy.isExpired(LocalDate.of(2026, 9, 22)));
     }
+
+    @Test
+    void reportsPastDateAsNotExpiring() {
+        assertFalse(policy.isExpiring(LocalDate.of(2026, 9, 20)));
+    }
+
+    @Test
+    void reportsTodayAsExpiring() {
+        assertTrue(policy.isExpiring(LocalDate.of(2026, 9, 21)));
+    }
+
+    @Test
+    void reportsTomorrowAsExpiring() {
+        assertTrue(policy.isExpiring(LocalDate.of(2026, 9, 22)));
+    }
+
+    @Test
+    void reportsFifthDayAsExpiring() {
+        assertTrue(policy.isExpiring(LocalDate.of(2026, 9, 26)));
+    }
+
+    @Test
+    void reportsSixthDayAsNotExpiring() {
+        assertFalse(policy.isExpiring(LocalDate.of(2026, 9, 27)));
+    }
 }

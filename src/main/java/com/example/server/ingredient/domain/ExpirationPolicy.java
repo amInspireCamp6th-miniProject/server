@@ -7,6 +7,8 @@ import java.util.Objects;
 
 public final class ExpirationPolicy {
 
+    private static final long EXPIRING_THRESHOLD_DAYS = 5;
+
     private final Clock clock;
 
     public ExpirationPolicy(Clock clock) {
@@ -19,5 +21,10 @@ public final class ExpirationPolicy {
 
     public boolean isExpired(LocalDate expirationDate) {
         return expirationDate.isBefore(LocalDate.now(clock));
+    }
+
+    public boolean isExpiring(LocalDate expirationDate) {
+        long remainingDays = calculateRemainingDays(expirationDate);
+        return remainingDays >= 0 && remainingDays <= EXPIRING_THRESHOLD_DAYS;
     }
 }
