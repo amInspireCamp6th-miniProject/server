@@ -6,3 +6,8 @@ spring:
     url: jdbc:mariadb://localhost:3306/{DB이름}
     username: {계정}
     password: {비밀번호}
+
+jwt:
+  # 32바이트 이상의 임의 값을 Base64로 인코딩해 넣습니다.
+  # 생성 예: openssl rand -base64 32
+  secret: {JWT 비밀키}
