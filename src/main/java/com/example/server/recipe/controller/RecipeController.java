@@ -1,5 +1,6 @@
 package com.example.server.recipe.controller;
 
+import com.example.server.recipe.dto.RecipeDetailResponse;
 import com.example.server.recipe.dto.RecipeInstructionsResponse;
 import com.example.server.recipe.service.RecipeService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,11 @@ public class RecipeController {
 
     public RecipeController(RecipeService recipeService) {
         this.recipeService = recipeService;
+    }
+
+    @GetMapping("/{recipeId}")
+    public RecipeDetailResponse getRecipeDetail(@PathVariable("recipeId") Long recipeId) {
+        return recipeService.getRecipeDetail(recipeId);
     }
 
     @GetMapping("/{recipeId}/instructions")

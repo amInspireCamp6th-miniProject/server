@@ -11,12 +11,17 @@ import static org.mockito.Mockito.when;
 
 import com.example.server.global.exception.CustomException;
 import com.example.server.global.exception.ErrorCode;
+import com.example.server.recipe.dto.RecipeDetailResponse;
+import com.example.server.recipe.dto.RecipeIngredientResponse;
 import com.example.server.recipe.dto.RecipeInstructionStepResponse;
 import com.example.server.recipe.dto.RecipeInstructionsResponse;
 import com.example.server.recipe.entity.Recipe;
+import com.example.server.recipe.entity.RecipeIngredient;
 import com.example.server.recipe.entity.RecipeStep;
+import com.example.server.recipe.repository.RecipeIngredientRepository;
 import com.example.server.recipe.repository.RecipeRepository;
 import com.example.server.recipe.repository.RecipeStepRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -33,10 +38,55 @@ class RecipeServiceTest {
     private RecipeRepository recipeRepository;
 
     @Mock
+    private RecipeIngredientRepository recipeIngredientRepository;
+
+    @Mock
     private RecipeStepRepository recipeStepRepository;
 
     @InjectMocks
     private RecipeService recipeService;
+
+    @Test
+    void returnsRecipeDetailWithAllIngredients() {
+        Long recipeId = 1L;
+        Recipe recipe = mock(Recipe.class);
+        RecipeIngredient kimchi = ingredient("김치", "200.00", "g");
+        RecipeIngredient rice = ingredient("밥", "1.00", "공기");
+        when(recipe.getRecipeId()).thenReturn(recipeId);
+        when(recipe.getName()).thenReturn("김치볶음밥");
+        when(recipe.getDescription()).thenReturn("간단한 김치볶음밥");
+        when(recipe.getCookingTime()).thenReturn(15);
+        when(recipe.getImageUrl()).thenReturn("https://example.com/kimchi.jpg");
+        when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(recipe));
+        when(recipeIngredientRepository.findAllByRecipe_RecipeId(recipeId))
+                .thenReturn(List.of(kimchi, rice));
+
+        RecipeDetailResponse response = recipeService.getRecipeDetail(recipeId);
+
+        assertEquals(recipeId, response.recipeId());
+        assertEquals("김치볶음밥", response.name());
+        assertEquals("간단한 김치볶음밥", response.description());
+        assertEquals(15, response.cookingTime());
+        assertEquals("https://example.com/kimchi.jpg", response.imageUrl());
+        assertEquals(List.of(
+                new RecipeIngredientResponse("김치", new BigDecimal("200.00"), "g"),
+                new RecipeIngredientResponse("밥", new BigDecimal("1.00"), "공기")), response.ingredients());
+        verify(recipeRepository).findById(recipeId);
+        verify(recipeIngredientRepository).findAllByRecipe_RecipeId(recipeId);
+    }
+
+    @Test
+    void throwsRecipeNotFoundWhenLoadingRecipeDetail() {
+        Long recipeId = 999L;
+        when(recipeRepository.findById(recipeId)).thenReturn(Optional.empty());
+
+        CustomException exception = assertThrows(CustomException.class,
+                () -> recipeService.getRecipeDetail(recipeId));
+
+        assertSame(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+        verify(recipeRepository).findById(recipeId);
+        verifyNoInteractions(recipeIngredientRepository);
+    }
 
     @Test
     void returnsInstructionsInRepositoryOrderWithMappedFields() {
@@ -84,5 +134,13 @@ class RecipeServiceTest {
         when(step.getStepNo()).thenReturn(stepNo);
         when(step.getDescription()).thenReturn(description);
         return step;
+    }
+
+    private RecipeIngredient ingredient(String ingredientName, String amount, String unit) {
+        RecipeIngredient ingredient = mock(RecipeIngredient.class);
+        when(ingredient.getIngredientName()).thenReturn(ingredientName);
+        when(ingredient.getAmount()).thenReturn(new BigDecimal(amount));
+        when(ingredient.getUnit()).thenReturn(unit);
+        return ingredient;
     }
 }
