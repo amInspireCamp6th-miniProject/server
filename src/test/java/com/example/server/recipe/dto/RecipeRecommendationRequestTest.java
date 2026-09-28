@@ -13,39 +13,44 @@ class RecipeRecommendationRequestTest {
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
-    void categoryIds가_null이면_검증에_실패한다() {
+    void ingredientIds가_null이면_검증에_실패한다() {
         RecipeRecommendationRequest request = new RecipeRecommendationRequest(null);
 
         assertThat(validator.validate(request)).hasSize(1);
     }
 
     @Test
-    void categoryIds가_비어_있으면_검증에_실패한다() {
+    void ingredientIds가_비어_있으면_검증에_실패한다() {
         RecipeRecommendationRequest request = new RecipeRecommendationRequest(List.of());
 
         assertThat(validator.validate(request)).hasSize(1);
     }
 
     @Test
-    void categoryIds가_유효하면_검증을_통과한다() {
-        RecipeRecommendationRequest request = new RecipeRecommendationRequest(List.of(1, 3, 6));
+    void ingredientIds가_유효하면_검증을_통과한다() {
+        RecipeRecommendationRequest request = new RecipeRecommendationRequest(List.of(11L, 25L, 31L));
 
         assertThat(validator.validate(request)).isEmpty();
     }
 
     @Test
-    void categoryIds에_null이_포함되면_검증에_실패한다() {
-        RecipeRecommendationRequest request = new RecipeRecommendationRequest(Arrays.asList(1, null, 6));
+    void ingredientIds에_null이_포함되면_검증에_실패한다() {
+        RecipeRecommendationRequest request = new RecipeRecommendationRequest(Arrays.asList(11L, null, 31L));
 
         assertThat(validator.validate(request)).hasSize(1);
     }
 
     @Test
-    void categoryId가_0이거나_음수이면_검증에_실패한다() {
-        RecipeRecommendationRequest zeroRequest = new RecipeRecommendationRequest(List.of(0));
-        RecipeRecommendationRequest negativeRequest = new RecipeRecommendationRequest(List.of(-1));
+    void ingredientId가_0이면_검증에_실패한다() {
+        RecipeRecommendationRequest request = new RecipeRecommendationRequest(List.of(0L));
 
-        assertThat(validator.validate(zeroRequest)).hasSize(1);
-        assertThat(validator.validate(negativeRequest)).hasSize(1);
+        assertThat(validator.validate(request)).hasSize(1);
+    }
+
+    @Test
+    void ingredientId가_음수이면_검증에_실패한다() {
+        RecipeRecommendationRequest request = new RecipeRecommendationRequest(List.of(-1L));
+
+        assertThat(validator.validate(request)).hasSize(1);
     }
 }

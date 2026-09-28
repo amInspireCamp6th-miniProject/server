@@ -6,5 +6,5 @@ import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 public record RecipeRecommendationRequest(
-        @NotEmpty List<@NotNull @Positive Integer> categoryIds) {
+        @NotEmpty List<@NotNull @Positive Long> ingredientIds) {
 }
