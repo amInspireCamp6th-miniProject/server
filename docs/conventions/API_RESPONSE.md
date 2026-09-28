@@ -91,7 +91,10 @@ Refresh Token은 응답 본문에 넣지 않습니다. HttpOnly 쿠키로만 주
 | `ACCESS_DENIED` | 403 | `GlobalErrorCode` | 권한 부족 (현재는 역할 구분이 없어 발생하지 않음) |
 | `RESOURCE_NOT_FOUND` | 404 | `GlobalErrorCode` | 없는 URL |
 | `METHOD_NOT_ALLOWED` | 405 | `GlobalErrorCode` | 지원하지 않는 HTTP Method |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | `GlobalErrorCode` | JSON이 아닌 형식으로 요청 (`Content-Type` 불일치) |
 | `INTERNAL_SERVER_ERROR` | 500 | `GlobalErrorCode` | 처리되지 않은 예외 (서버 로그에만 상세 기록) |
+
+Spring이 상태 코드를 정해 던지는 요청 오류(예: 415)는 `GlobalExceptionHandler`가 그 상태 코드에 해당하는 에러 코드로 바꿔 응답합니다. 해당하는 코드가 없으면 `INTERNAL_SERVER_ERROR`로 처리하므로, 새로운 상태 코드가 필요하면 `GlobalErrorCode`에 추가합니다.
 | `INVALID_CREDENTIALS` | 401 | `AuthErrorCode` | 로그인 실패. 이메일이 없는 경우와 비밀번호가 틀린 경우를 구분하지 않음 (가입 여부 노출 방지) |
 | `INVALID_REFRESH_TOKEN` | 401 | `AuthErrorCode` | 재발급 실패. 없는·만료된·이미 사용한·로그아웃으로 폐기된 Refresh Token을 구분하지 않음 |
 | `DUPLICATE_EMAIL` | 409 | `UserErrorCode` | 이미 가입된 이메일로 회원가입 |
