@@ -1,12 +1,12 @@
 package com.example.server.recipe.service;
 
-import com.example.server.global.exception.CustomException;
-import com.example.server.global.exception.ErrorCode;
+import com.example.server.global.exception.BusinessException;
 import com.example.server.recipe.dto.RecipeDetailResponse;
 import com.example.server.recipe.dto.RecipeIngredientResponse;
 import com.example.server.recipe.dto.RecipeInstructionStepResponse;
 import com.example.server.recipe.dto.RecipeInstructionsResponse;
 import com.example.server.recipe.entity.Recipe;
+import com.example.server.recipe.exception.RecipeErrorCode;
 import com.example.server.recipe.repository.RecipeIngredientRepository;
 import com.example.server.recipe.repository.RecipeRepository;
 import com.example.server.recipe.repository.RecipeStepRepository;
@@ -31,7 +31,7 @@ public class RecipeService {
 
     public RecipeDetailResponse getRecipeDetail(Long recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
         List<RecipeIngredientResponse> ingredients = recipeIngredientRepository
                 .findAllByRecipe_RecipeId(recipeId)
@@ -51,7 +51,7 @@ public class RecipeService {
 
     public RecipeInstructionsResponse getInstructions(Long recipeId) {
         recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
         List<RecipeInstructionStepResponse> instructions = recipeStepRepository
                 .findAllByRecipe_RecipeIdOrderByStepNoAsc(recipeId)

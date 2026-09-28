@@ -7,12 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.server.global.exception.CustomException;
-import com.example.server.global.exception.ErrorCode;
+import com.example.server.global.exception.BusinessException;
 import com.example.server.recipe.dto.RecipeDetailResponse;
 import com.example.server.recipe.dto.RecipeIngredientResponse;
 import com.example.server.recipe.dto.RecipeInstructionStepResponse;
 import com.example.server.recipe.dto.RecipeInstructionsResponse;
+import com.example.server.recipe.exception.RecipeErrorCode;
 import com.example.server.recipe.service.RecipeService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -63,7 +63,7 @@ class RecipeControllerTest {
     @Test
     void returnsNotFoundWhenRecipeDetailDoesNotExist() throws Exception {
         when(recipeService.getRecipeDetail(999L))
-                .thenThrow(new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+                .thenThrow(new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
         mockMvc.perform(get("/api/v1/recipes/999"))
                 .andExpect(status().isNotFound())
@@ -96,7 +96,7 @@ class RecipeControllerTest {
     @Test
     void returnsNotFoundThroughGlobalExceptionHandler() throws Exception {
         when(recipeService.getInstructions(999L))
-                .thenThrow(new CustomException(ErrorCode.RECIPE_NOT_FOUND));
+                .thenThrow(new BusinessException(RecipeErrorCode.RECIPE_NOT_FOUND));
 
         mockMvc.perform(get("/api/v1/recipes/999/instructions"))
                 .andExpect(status().isNotFound())

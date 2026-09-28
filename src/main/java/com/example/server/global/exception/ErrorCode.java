@@ -2,28 +2,15 @@ package com.example.server.global.exception;
 
 import org.springframework.http.HttpStatus;
 
-public enum ErrorCode {
-    RECIPE_NOT_FOUND(HttpStatus.NOT_FOUND, "RECIPE_NOT_FOUND", "레시피를 찾을 수 없습니다.");
+/**
+ * 에러 코드 공통 규약. 도메인별로 enum을 만들어 이 인터페이스를 구현한다.
+ * 한 enum에 모두 모으면 세 명이 같은 파일을 동시에 수정하게 되므로 도메인별로 분리한다.
+ */
+public interface ErrorCode {
 
-    private final HttpStatus status;
-    private final String code;
-    private final String message;
+    HttpStatus getStatus();
 
-    ErrorCode(HttpStatus status, String code, String message) {
-        this.status = status;
-        this.code = code;
-        this.message = message;
-    }
+    String getCode();
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
+    String getMessage();
 }

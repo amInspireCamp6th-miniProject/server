@@ -9,8 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.example.server.global.exception.CustomException;
-import com.example.server.global.exception.ErrorCode;
+import com.example.server.global.exception.BusinessException;
 import com.example.server.recipe.dto.RecipeDetailResponse;
 import com.example.server.recipe.dto.RecipeIngredientResponse;
 import com.example.server.recipe.dto.RecipeInstructionStepResponse;
@@ -18,6 +17,7 @@ import com.example.server.recipe.dto.RecipeInstructionsResponse;
 import com.example.server.recipe.entity.Recipe;
 import com.example.server.recipe.entity.RecipeIngredient;
 import com.example.server.recipe.entity.RecipeStep;
+import com.example.server.recipe.exception.RecipeErrorCode;
 import com.example.server.recipe.repository.RecipeIngredientRepository;
 import com.example.server.recipe.repository.RecipeRepository;
 import com.example.server.recipe.repository.RecipeStepRepository;
@@ -80,10 +80,10 @@ class RecipeServiceTest {
         Long recipeId = 999L;
         when(recipeRepository.findById(recipeId)).thenReturn(Optional.empty());
 
-        CustomException exception = assertThrows(CustomException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> recipeService.getRecipeDetail(recipeId));
 
-        assertSame(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+        assertSame(RecipeErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
         verify(recipeRepository).findById(recipeId);
         verifyNoInteractions(recipeIngredientRepository);
     }
@@ -121,10 +121,10 @@ class RecipeServiceTest {
         Long recipeId = 999L;
         when(recipeRepository.findById(recipeId)).thenReturn(Optional.empty());
 
-        CustomException exception = assertThrows(CustomException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> recipeService.getInstructions(recipeId));
 
-        assertSame(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+        assertSame(RecipeErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
         verify(recipeRepository).findById(recipeId);
         verifyNoInteractions(recipeStepRepository);
     }
