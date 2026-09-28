@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ import org.hibernate.annotations.UpdateTimestamp;
  */
 @Getter
 @Entity
-@Table(name = "ingredients")
+@Table(name = "INGREDIENTS")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Ingredient {
 
@@ -66,6 +67,16 @@ public class Ingredient {
     @Enumerated(EnumType.STRING)
     @Column(name = "storage_type", nullable = false, length = 20)
     private StorageType storageType;
+
+    @Lob
+    @Column(name = "image_data", columnDefinition = "MEDIUMBLOB")
+    private byte[] imageData;
+
+    @Column(name = "image_content_type", length = 100)
+    private String imageContentType;
+
+    @Column(name = "image_file_name", length = 255)
+    private String imageFileName;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -121,5 +132,11 @@ public class Ingredient {
         if (request.storageType() != null) {
             storageType = request.storageType();
         }
+    }
+
+    public void updateImage(byte[] imageData, String imageContentType, String imageFileName) {
+        this.imageData = imageData;
+        this.imageContentType = imageContentType;
+        this.imageFileName = imageFileName;
     }
 }

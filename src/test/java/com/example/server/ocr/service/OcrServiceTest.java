@@ -32,7 +32,7 @@ class OcrServiceTest {
 
     @BeforeEach
     void setUp() {
-        ocrService = new OcrService(ocrClient, ingredientTextAnalyzer);
+        ocrService = new OcrService(ocrClient, ingredientTextAnalyzer, new OcrImageValidator());
     }
 
     @Test

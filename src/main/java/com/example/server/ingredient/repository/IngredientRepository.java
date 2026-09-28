@@ -2,6 +2,7 @@ package com.example.server.ingredient.repository;
 
 import com.example.server.ingredient.entity.Ingredient;
 import com.example.server.ingredient.entity.StorageType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,6 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     /** id와 userId를 함께 조건으로 사용해 다른 사용자의 식재료가 조회되지 않게 한다. */
     Optional<Ingredient> findByIdAndUserId(Long id, Long userId);
+
+    List<Ingredient> findAllByUserIdAndIdIn(Long userId, Collection<Long> ingredientIds);
 }

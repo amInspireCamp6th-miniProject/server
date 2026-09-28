@@ -1,6 +1,7 @@
 package com.example.server.ingredient.controller;
 
 import com.example.server.ingredient.dto.IngredientCreateRequest;
+import com.example.server.ingredient.dto.IngredientImageData;
 import com.example.server.ingredient.dto.IngredientResponse;
 import com.example.server.ingredient.dto.IngredientUpdateRequest;
 import com.example.server.ingredient.entity.StorageType;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +54,16 @@ public class IngredientController {
     public ResponseEntity<IngredientResponse> findById(
             @LoginUser Long userId, @PathVariable Long ingredientId) {
         return ResponseEntity.ok(ingredientService.findById(userId, ingredientId));
+    }
+
+    @GetMapping("/{ingredientId}/image")
+    public ResponseEntity<byte[]> findImage(
+            @LoginUser Long userId, @PathVariable Long ingredientId) {
+        IngredientImageData image = ingredientService.findImage(userId, ingredientId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(image.contentType()))
+                .contentLength(image.data().length)
+                .body(image.data());
     }
 
     @PatchMapping("/{ingredientId}")
