@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.example.server.ingredient.dto.IngredientCreateRequest;
 import com.example.server.ingredient.dto.IngredientImageData;
@@ -15,6 +16,8 @@ import com.example.server.ingredient.entity.StorageType;
 import com.example.server.ingredient.repository.IngredientRepository;
 import com.example.server.global.exception.BusinessException;
 import com.example.server.ingredient.exception.IngredientErrorCode;
+import com.example.server.ocr.service.OcrImageValidator;
+import org.springframework.mock.web.MockMultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,11 +36,14 @@ class IngredientServiceTest {
     @Mock
     private IngredientRepository ingredientRepository;
 
+    @Mock
+    private OcrImageValidator imageValidator;
+
     private IngredientService ingredientService;
 
     @BeforeEach
     void setUp() {
-        ingredientService = new IngredientService(ingredientRepository);
+        ingredientService = new IngredientService(ingredientRepository, imageValidator);
     }
 
     @Test
@@ -152,6 +158,39 @@ class IngredientServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(IngredientErrorCode.INGREDIENT_IMAGE_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("본인 식재료 이미지를 교체한다")
+    void updateIngredientImage() {
+        byte[] imageData = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00};
+        MockMultipartFile image =
+                new MockMultipartFile("image", "new.jpg", "image/jpeg", imageData);
+        Ingredient ingredient = Ingredient.create(1L, createRequest());
+        ingredient.updateImage(new byte[] {1}, "image/png", "old.png");
+        given(ingredientRepository.findByIdAndUserId(10L, 1L))
+                .willReturn(Optional.of(ingredient));
+        given(imageValidator.validateAndRead(image)).willReturn(imageData);
+
+        ingredientService.updateImage(1L, 10L, image);
+
+        assertThat(ingredient.getImageData()).containsExactly(imageData);
+        assertThat(ingredient.getImageContentType()).isEqualTo("image/jpeg");
+        assertThat(ingredient.getImageFileName()).isEqualTo("new.jpg");
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 식재료 이미지는 교체할 수 없다")
+    void cannotUpdateAnotherUsersIngredientImage() {
+        MockMultipartFile image =
+                new MockMultipartFile("image", "new.jpg", "image/jpeg", new byte[] {1});
+        given(ingredientRepository.findByIdAndUserId(10L, 2L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> ingredientService.updateImage(2L, 10L, image))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(IngredientErrorCode.INGREDIENT_NOT_FOUND);
+        verifyNoInteractions(imageValidator);
     }
 
     @Test

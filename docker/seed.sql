@@ -1,0 +1,150 @@
+/*M!999999\- enable the sandbox mode */ 
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
+DROP TABLE IF EXISTS `INGREDIENTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `INGREDIENTS` (
+  `ingredient_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `category` varchar(30) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `expiration_date` date NOT NULL,
+  `image_content_type` varchar(100) DEFAULT NULL,
+  `image_data` mediumblob DEFAULT NULL,
+  `image_file_name` varchar(255) DEFAULT NULL,
+  `ingredient_name` varchar(100) NOT NULL,
+  `product_name` varchar(150) NOT NULL,
+  `purchase_date` date NOT NULL,
+  `quantity` decimal(10,2) NOT NULL,
+  `storage_type` enum('FROZEN','REFRIGERATED','ROOM_TEMP') NOT NULL,
+  `unit` varchar(20) NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `user_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`ingredient_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `INGREDIENTS` WRITE;
+/*!40000 ALTER TABLE `INGREDIENTS` DISABLE KEYS */;
+INSERT INTO `INGREDIENTS` VALUES
+(1,'가공식품','2026-09-28 18:14:13.355930','2026-10-02',NULL,NULL,NULL,'두부','CJ 두부 300g','2026-09-28',1.00,'REFRIGERATED','모','2026-09-28 18:14:13.355930',1),
+(2,'유제품','2026-09-28 18:14:13.484646','2026-10-05',NULL,NULL,NULL,'우유','서울우유 1L','2026-09-26',1.00,'REFRIGERATED','L','2026-09-28 18:14:13.484646',1),
+(3,'난류','2026-09-28 18:14:13.580499','2026-10-15',NULL,NULL,NULL,'계란','풀무원 계란 30구','2026-09-20',30.00,'REFRIGERATED','개','2026-09-28 18:14:13.580499',1),
+(4,'육류','2026-09-28 18:14:13.679801','2026-12-20',NULL,NULL,NULL,'닭가슴살','하림 닭가슴살 1kg','2026-09-20',1.00,'FROZEN','kg','2026-09-28 18:14:13.679801',1),
+(5,'가공식품','2026-09-28 18:14:13.778776','2026-10-01',NULL,NULL,NULL,'만두','오뚜기 냉동만두','2026-09-15',2.00,'FROZEN','봉','2026-09-28 18:14:13.778776',1),
+(6,'과일','2026-09-28 18:14:13.901286','2026-09-25',NULL,NULL,NULL,'딸기','국산 냉동 딸기','2026-09-10',500.00,'FROZEN','g','2026-09-28 18:14:13.901286',1),
+(7,'가공식품','2026-09-28 18:14:14.002106','2027-03-01',NULL,NULL,NULL,'즉석밥','햇반 210g','2026-09-01',12.00,'ROOM_TEMP','개','2026-09-28 18:14:14.002106',1),
+(8,'채소','2026-09-28 18:14:14.117436','2026-10-03',NULL,NULL,NULL,'양파','국산 양파 1.5kg','2026-09-22',1.50,'ROOM_TEMP','kg','2026-09-28 18:14:14.117436',1),
+(9,'과일','2026-09-28 18:14:14.217119','2026-09-27',NULL,NULL,NULL,'바나나','델몬트 바나나','2026-09-24',1.00,'ROOM_TEMP','송이','2026-09-28 18:14:14.217119',1);
+/*!40000 ALTER TABLE `INGREDIENTS` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+DROP TABLE IF EXISTS `RECIPES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `RECIPES` (
+  `recipe_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cooking_time` int(11) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6),
+  `description` varchar(500) DEFAULT NULL,
+  `image_url` varchar(500) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`recipe_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `RECIPES` WRITE;
+/*!40000 ALTER TABLE `RECIPES` DISABLE KEYS */;
+/*!40000 ALTER TABLE `RECIPES` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+DROP TABLE IF EXISTS `RECIPE_INGREDIENTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `RECIPE_INGREDIENTS` (
+  `recipe_ingredient_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) DEFAULT NULL,
+  `ingredient_name` varchar(100) NOT NULL,
+  `unit` varchar(20) DEFAULT NULL,
+  `recipe_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`recipe_ingredient_id`),
+  KEY `FK5vymnra08pennuctkq8x3ykqu` (`recipe_id`),
+  CONSTRAINT `FK5vymnra08pennuctkq8x3ykqu` FOREIGN KEY (`recipe_id`) REFERENCES `RECIPES` (`recipe_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `RECIPE_INGREDIENTS` WRITE;
+/*!40000 ALTER TABLE `RECIPE_INGREDIENTS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `RECIPE_INGREDIENTS` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+DROP TABLE IF EXISTS `RECIPE_STEPS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `RECIPE_STEPS` (
+  `step_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `description` varchar(1000) NOT NULL,
+  `step_no` int(11) NOT NULL,
+  `recipe_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`step_id`),
+  UNIQUE KEY `uk_recipe_steps_recipe_step` (`recipe_id`,`step_no`),
+  CONSTRAINT `FKkfgqtcm2vx0vn7uteykt4dr5v` FOREIGN KEY (`recipe_id`) REFERENCES `RECIPES` (`recipe_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `RECIPE_STEPS` WRITE;
+/*!40000 ALTER TABLE `RECIPE_STEPS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `RECIPE_STEPS` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+DROP TABLE IF EXISTS `USERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `USERS` (
+  `user_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `nickname` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `UKavh1b2ec82audum2lyjx2p1ws` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `USERS` WRITE;
+/*!40000 ALTER TABLE `USERS` DISABLE KEYS */;
+INSERT INTO `USERS` VALUES
+(1,'2026-09-28 18:14:12.683140',NULL,'test@test.com','tester','$2a$10$IZk3tBs394ZMWz9jPPVwd.4oH1jeV1z/eGjY48TFWwsUKPe8qDxtC');
+/*!40000 ALTER TABLE `USERS` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+

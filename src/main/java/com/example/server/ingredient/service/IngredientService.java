@@ -9,10 +9,12 @@ import com.example.server.ingredient.entity.StorageType;
 import com.example.server.ingredient.repository.IngredientRepository;
 import com.example.server.global.exception.BusinessException;
 import com.example.server.ingredient.exception.IngredientErrorCode;
+import com.example.server.ocr.service.OcrImageValidator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /** 식재료 CRUD의 처리 순서와 사용자 소유권 검사를 담당한다. */
 @Service
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
+    private final OcrImageValidator imageValidator;
 
     @Transactional
     public IngredientResponse create(Long userId, IngredientCreateRequest request) {
@@ -58,6 +61,15 @@ public class IngredientService {
         ingredient.update(request);
 
         // 영속 상태 엔티티는 트랜잭션 종료 시 변경 감지되어 UPDATE SQL이 실행된다.
+        return IngredientResponse.from(ingredient);
+    }
+
+    /** 기존 이미지를 통째로 교체한다. 부분 수정이 아니라 전체 교체이므로 PUT에 대응한다. */
+    @Transactional
+    public IngredientResponse updateImage(Long userId, Long ingredientId, MultipartFile image) {
+        Ingredient ingredient = findOwnedIngredient(userId, ingredientId);
+        byte[] imageData = imageValidator.validateAndRead(image);
+        ingredient.updateImage(imageData, image.getContentType(), image.getOriginalFilename());
         return IngredientResponse.from(ingredient);
     }
 

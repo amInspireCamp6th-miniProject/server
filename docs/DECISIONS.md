@@ -154,7 +154,7 @@
 | 에러 코드 구조 | 도메인별 enum(`AuthErrorCode`, `UserErrorCode` 등)이 `ErrorCode` 인터페이스 구현 | C-06 |
 | `updated_at` | 등록 시 NULL, 수정될 때만 채움 (`@EnableJpaAuditing(modifyOnCreate = false)`, 테이블 명세의 기본값 NULL과 일치) | D-09 |
 | 테이블 이름 대소문자 | `@Table(name = "USERS")`처럼 DDL과 같은 대문자. Linux MariaDB는 테이블 이름 대소문자를 구분 | D-18 |
-| CORS | `SecurityConfig`에서 설정. 허용 출처는 `cors.allowed-origins`(기본 `http://localhost:5173`), 허용 메서드 GET·POST·PATCH·DELETE·OPTIONS, `allowCredentials=true`(Refresh Token 쿠키 전송에 필요), 사전 요청 캐시 1시간, 적용 경로 `/api/**` | C-14, C-07 |
+| CORS | `SecurityConfig`에서 설정. 허용 출처는 `cors.allowed-origins`(기본 `http://localhost:5173`), 허용 메서드 GET·POST·PUT·PATCH·DELETE·OPTIONS, `allowCredentials=true`(Refresh Token 쿠키 전송에 필요), 사전 요청 캐시 1시간, 적용 경로 `/api/**` | C-14, C-07 |
 | 컴파일 인코딩 | `build.gradle`에 UTF-8 명시 (Windows 기본 MS949로 컴파일하면 한글 메시지가 깨짐) | - |
 | 기본 계정 비활성화 | `UserDetailsServiceAutoConfiguration` 제외. JWT만 쓰므로 기본 계정이 필요 없고, 제외하지 않으면 자동 생성 비밀번호가 시작 로그에 찍힘 | - |
 

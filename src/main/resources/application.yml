@@ -46,3 +46,4 @@ clova:
     secret-key: ${CLOVA_OCR_SECRET_KEY:}
     # 콘솔의 월 90회 제한보다 먼저 차단하는 애플리케이션 내부 안전 한도
     monthly-limit: ${CLOVA_OCR_MONTHLY_LIMIT:80}
+

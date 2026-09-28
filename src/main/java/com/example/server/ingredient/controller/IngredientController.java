@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /** 프론트엔드의 식재료 HTTP 요청을 받아 Service에 전달한다. */
 @RestController
@@ -64,6 +67,14 @@ public class IngredientController {
                 .contentType(MediaType.parseMediaType(image.contentType()))
                 .contentLength(image.data().length)
                 .body(image.data());
+    }
+
+    @PutMapping(value = "/{ingredientId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<IngredientResponse> updateImage(
+            @LoginUser Long userId,
+            @PathVariable Long ingredientId,
+            @RequestPart("image") MultipartFile image) {
+        return ResponseEntity.ok(ingredientService.updateImage(userId, ingredientId, image));
     }
 
     @PatchMapping("/{ingredientId}")

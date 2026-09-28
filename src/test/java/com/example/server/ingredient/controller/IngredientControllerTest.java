@@ -4,8 +4,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,7 +35,10 @@ import com.example.server.global.security.WithLoginUser;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -149,6 +154,38 @@ class IngredientControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("INGREDIENT_IMAGE_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("식재료 이미지를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("식재료 이미지를 교체하면 200과 imageUrl을 반환한다")
+    void updateIngredientImage() throws Exception {
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "new.jpg", "image/jpeg",
+                new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00});
+        given(ingredientService.updateImage(eq(1L), eq(10L), any(MultipartFile.class)))
+                .willReturn(new IngredientResponse(
+                        10L, "풀무원 국산콩 두부 300g", "두부", "가공식품", BigDecimal.ONE, "모",
+                        LocalDate.of(2026, 9, 18), LocalDate.of(2026, 9, 25),
+                        StorageType.REFRIGERATED, LocalDateTime.of(2026, 9, 22, 9, 0),
+                        LocalDateTime.of(2026, 9, 28, 9, 0), "/api/v1/ingredients/10/image"));
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/ingredients/{ingredientId}/image", 10L)
+                        .file(image))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ingredientId").value(10L))
+                .andExpect(jsonPath("$.imageUrl").value("/api/v1/ingredients/10/image"));
+
+        verify(ingredientService).updateImage(eq(1L), eq(10L), any(MultipartFile.class));
+    }
+
+    @Test
+    @DisplayName("교체할 이미지 파트가 없으면 400을 반환한다")
+    void rejectMissingImagePart() throws Exception {
+        mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/ingredients/{ingredientId}/image", 10L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_INPUT"));
+
+        verifyNoInteractions(ingredientService);
     }
 
     @Test
