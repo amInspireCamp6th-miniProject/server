@@ -3,6 +3,7 @@ package com.example.server.global.exception;
 import com.example.server.global.response.ErrorResponse;
 import com.example.server.global.response.ErrorResponse.FieldErrorDetail;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -52,8 +53,19 @@ public class GlobalExceptionHandler {
         return toResponse(GlobalErrorCode.METHOD_NOT_ALLOWED);
     }
 
+    /**
+     * 위에서 잡지 못한 예외를 처리한다.
+     * Spring이 상태 코드를 정해 던지는 요청 오류(ErrorResponse 구현체, 예: 415)는 그 상태 코드로 응답한다.
+     * 이 처리가 없으면 클라이언트 잘못인 요청이 500으로 나가고 서버 로그에 ERROR가 쌓인다.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
+        if (e instanceof org.springframework.web.ErrorResponse springError) {
+            Optional<GlobalErrorCode> errorCode = GlobalErrorCode.findByStatus(springError.getStatusCode());
+            if (errorCode.isPresent()) {
+                return toResponse(errorCode.get());
+            }
+        }
         log.error("처리되지 않은 예외", e);
         return toResponse(GlobalErrorCode.INTERNAL_SERVER_ERROR);
     }
