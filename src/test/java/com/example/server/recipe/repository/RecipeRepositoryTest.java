@@ -89,6 +89,18 @@ class RecipeRepositoryTest {
         assertTrue(recipeStepRepository.findAllByRecipe_RecipeIdOrderByStepNoAsc(Long.MAX_VALUE).isEmpty());
     }
 
+    @Test
+    void findsAllRecipeIngredientsWithRecipesInStableOrder() {
+        List<RecipeIngredient> ingredients = recipeIngredientRepository.findAllWithRecipe();
+
+        assertEquals(List.of("김치", "밥", "달걀"), ingredients.stream()
+                .map(RecipeIngredient::getIngredientName)
+                .toList());
+        assertEquals(List.of("김치볶음밥", "김치볶음밥", "계란볶음밥"), ingredients.stream()
+                .map(ingredient -> ingredient.getRecipe().getName())
+                .toList());
+    }
+
     private Long findRecipeId(String name) {
         Number id = (Number) entityManager.createNativeQuery("SELECT recipe_id FROM RECIPES WHERE name = :name")
                 .setParameter("name", name)
