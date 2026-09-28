@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.server.global.exception.BusinessException;
+import com.example.server.global.security.WithLoginUser;
 import com.example.server.recipe.dto.RecipeDetailResponse;
 import com.example.server.recipe.dto.RecipeIngredientResponse;
 import com.example.server.recipe.dto.RecipeInstructionStepResponse;
@@ -23,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(RecipeController.class)
+@WithLoginUser
 class RecipeControllerTest {
 
     @Autowired
