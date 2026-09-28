@@ -27,10 +27,14 @@
 | D-16 | DB | ✅ MariaDB (드라이버 `org.mariadb.jdbc:mariadb-java-client`). 테스트는 H2 메모리 DB(MySQL 호환 모드) | Notion 「테이블 명세서」 |
 | D-17 | 보관상태 값 | ✅ `storage_type`: `REFRIGERATED`(냉장), `FROZEN`(냉동), `ROOM_TEMP`(실온). 팀 공유 DDL의 CHECK 제약조건과 동일 | Notion 「테이블 명세서」 |
 | D-18 | 테이블 생성 방식 | ✅ 팀 공유 DDL 스크립트로 생성. JPA는 `ddl-auto: validate`로 엔티티와 테이블 일치 여부만 검사. 테스트(H2)는 엔티티 기준으로 자동 생성 | - |
-| D-20 | Refresh Token | ✅ 도입. **JWT**(Access Token과 같은 비밀키, `type` 클레임으로 구분)로 발급하고 발급 목록을 서버 메모리에 보관. **HttpOnly 쿠키**(`refreshToken`, `Path=/api/v1/auth/refresh`)로 전달, 유효기간 14일, 재발급 시 회전(기존 토큰 폐기 후 새 쿠키 발급), 로그아웃 시 폐기·쿠키 삭제. 재발급 API `POST /api/v1/auth/refresh`는 **명세에 없어 추가 필요** | [API_RESPONSE](conventions/API_RESPONSE.md) |
 | D-19 | 로그아웃 방식 | ✅ 서버 무효화(블랙리스트). 로그아웃 요청에 쓴 Access Token을 원래 만료 시각까지 거부(`401 INVALID_TOKEN`)하고, 그 회원의 Refresh Token을 모두 폐기한 뒤 쿠키를 삭제(`Max-Age=0`). 응답은 `204`(C-20). 프론트는 보관 중인 Access Token을 삭제해야 함. 저장소는 B-18 | [API_RESPONSE](conventions/API_RESPONSE.md) |
+| D-20 | Refresh Token | ✅ 도입. **JWT**(Access Token과 같은 비밀키, `type` 클레임으로 구분)로 발급하고 발급 목록을 서버 메모리에 보관. **HttpOnly 쿠키**(`refreshToken`, `Path=/api/v1/auth/refresh`)로 전달, 유효기간 14일, 재발급 시 회전(기존 토큰 폐기 후 새 쿠키 발급), 로그아웃 시 폐기·쿠키 삭제. 재발급 API `POST /api/v1/auth/refresh`는 **명세에 없어 추가 필요** | [API_RESPONSE](conventions/API_RESPONSE.md) |
+| D-21 | 소비기한 정책 | ✅ 남은 일수 < 0은 만료, 0~5일은 임박, 6일 이상은 일반. 만료 식재료는 임박 목록에서 제외 | - |
+| D-22 | 공통 예외 처리 | ✅ 공통 `ErrorCode` 인터페이스와 `BusinessException`, 도메인별 ErrorCode enum, `ErrorResponse`, `GlobalExceptionHandler` 사용. 존재하지 않는 리소스 조회는 404 Not Found, 기본 오류 응답 필드는 `code`와 `message` | [API_RESPONSE](conventions/API_RESPONSE.md) |
 
 ## 논의 필요: 공통 (백엔드 + 프론트엔드)
+
+> C-11은 D-21에서 확정되었습니다. C-06의 오류 응답 부분은 D-22에서 확정되었고, 성공 응답 형식은 계속 논의가 필요합니다.
 
 | ID | 안건 | 선택지 / 제안 | 영향 범위 |
 | --- | --- | --- | --- |
@@ -42,7 +46,7 @@
 | C-07 | 인증 토큰 처리 | ✅ 프론트와 합의: **Access Token은 응답 본문 → `Authorization: Bearer` 헤더**(저장 위치는 프론트 재량), **Refresh Token은 HttpOnly 쿠키**(D-20). 남은 것: 배포 도메인 구성에 따른 쿠키 옵션(`secure`, `same-site`)과 401 응답 시 처리 방식. 자세한 내용은 아래 「C-07 참고」 | 백엔드 security, 프론트 인터셉터 |
 | C-09 | enum 표기 | 보관상태는 확정(D-17). 남은 것: `category`를 enum으로 둘지 자유 입력(OCR 결과 `가공식품` 등)으로 둘지 | API, DB, 프론트 화면 |
 | C-10 | 시간 형식·시간대 | 날짜는 확정(D-11). 남은 것: `createdAt` 등 시간 포함 값의 형식, 기준 시간대 `Asia/Seoul`. 현재 `Clock` 빈이 **서버 기본 시간대**를 따르므로, 배포 서버가 UTC면 소비기한 D-Day가 하루 어긋날 수 있음 → `Clock`을 `Asia/Seoul`로 고정할지 결정 필요 | API 전반 |
-| C-11 | 소비기한 정책 | 임박 기준(D-3? D-7?), 만료 식재료가 임박 목록에 포함되는지 | 대시보드, 임박 목록, 추천 |
+| C-11 | 소비기한 정책 | ✅ D-21에서 확정: 남은 일수 0~5일은 임박, 0일 미만은 만료이며 만료 식재료는 임박 목록에서 제외 | 대시보드, 임박 목록, 추천 |
 | C-12 | 목록 개수·페이징 | 대시보드 "먼저 먹어야 할 식재료" 개수, 추천 레시피 개수, 페이징 여부 | API 응답 |
 | C-13 | D-Day 계산 주체 | 서버가 D-Day 값을 내려줌 (**제안**, 명세의 "식재료 상세정보, D-Day") / 프론트가 계산 | API 응답 |
 | C-14 | 로컬 개발 연동 | 백엔드 포트, CORS 허용 방식 또는 Vite proxy, 프론트 API 주소 환경변수 이름. **서버 CORS는 구현됨**(허용 출처 기본값 `http://localhost:5173`, 환경변수 `CORS_ALLOWED_ORIGINS`로 변경). 남은 것: 프론트 개발 서버 포트 확인, Vite proxy를 쓸지 여부 | 개발 환경 |
