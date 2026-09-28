@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class RecipeRecommendationService {
     private final IngredientRepository ingredientRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
     private final RecipeStepRepository recipeStepRepository;
+    private final AiRecipeRecommendationService aiRecipeRecommendationService;
     private final ExpirationPolicy expirationPolicy;
 
     public List<RecipeRecommendationResponse> recommend(
@@ -51,6 +53,12 @@ public class RecipeRecommendationService {
         List<Ingredient> selectedIngredients = ingredientRepository
                 .findAllByUserIdAndIdIn(userId, requestedIngredientIds);
         validateOwnership(requestedIngredientIds, selectedIngredients);
+
+        Optional<List<RecipeRecommendationResponse>> aiRecommendations =
+                aiRecipeRecommendationService.recommend(selectedIngredients);
+        if (aiRecommendations.isPresent()) {
+            return aiRecommendations.get();
+        }
 
         Map<String, Long> weightsByIngredientName = selectedIngredients.stream()
                 .filter(ingredient -> !expirationPolicy.isExpired(ingredient.getExpirationDate()))
