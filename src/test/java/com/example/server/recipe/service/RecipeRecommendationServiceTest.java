@@ -2,6 +2,7 @@ package com.example.server.recipe.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +51,9 @@ class RecipeRecommendationServiceTest {
     @Mock
     private RecipeStepRepository recipeStepRepository;
 
+    @Mock
+    private AiRecipeRecommendationService aiRecipeRecommendationService;
+
     private RecipeRecommendationService recommendationService;
 
     @BeforeEach
@@ -58,7 +63,10 @@ class RecipeRecommendationServiceTest {
                 ingredientRepository,
                 recipeIngredientRepository,
                 recipeStepRepository,
+                aiRecipeRecommendationService,
                 new ExpirationPolicy(clock));
+        lenient().when(aiRecipeRecommendationService.recommend(anyList()))
+                .thenReturn(Optional.empty());
         lenient().when(recipeStepRepository
                         .findAllByRecipe_RecipeIdOrderByStepNoAsc(anyLong()))
                 .thenReturn(List.of());
@@ -75,7 +83,10 @@ class RecipeRecommendationServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(IngredientErrorCode.INGREDIENT_NOT_FOUND);
-        verifyNoInteractions(recipeIngredientRepository, recipeStepRepository);
+        verifyNoInteractions(
+                aiRecipeRecommendationService,
+                recipeIngredientRepository,
+                recipeStepRepository);
     }
 
     @Test
@@ -89,7 +100,50 @@ class RecipeRecommendationServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(IngredientErrorCode.INGREDIENT_NOT_FOUND);
+        verifyNoInteractions(
+                aiRecipeRecommendationService,
+                recipeIngredientRepository,
+                recipeStepRepository);
+    }
+
+    @Test
+    void returnsAiRecommendationsWithoutRunningDatabaseRecommendation() {
+        Ingredient tofu = ingredient(1L, "두부", 1);
+        RecipeRecommendationResponse aiResponse = new RecipeRecommendationResponse(
+                null,
+                "두부 볶음",
+                15,
+                List.of("두부"),
+                List.of("간장"),
+                "1. 두부를 볶습니다.");
+        given(ingredientRepository.findAllByUserIdAndIdIn(eq(USER_ID), argThat(ids ->
+                        ids.contains(1L))))
+                .willReturn(List.of(tofu));
+        given(aiRecipeRecommendationService.recommend(List.of(tofu)))
+                .willReturn(Optional.of(List.of(aiResponse)));
+
+        List<RecipeRecommendationResponse> responses = recommend(List.of(1L));
+
+        assertThat(responses).containsExactly(aiResponse);
         verifyNoInteractions(recipeIngredientRepository, recipeStepRepository);
+    }
+
+    @Test
+    void fallsBackToDatabaseRecommendationWhenAiIsUnavailable() {
+        Ingredient tofu = ingredient(1L, "두부", 1);
+        Recipe tofuRecipe = recipe(1L, "두부 구이", 10);
+        given(ingredientRepository.findAllByUserIdAndIdIn(eq(USER_ID), argThat(ids ->
+                        ids.contains(1L))))
+                .willReturn(List.of(tofu));
+        given(aiRecipeRecommendationService.recommend(List.of(tofu)))
+                .willReturn(Optional.empty());
+        givenRecipeIngredients(recipeIngredient(tofuRecipe, "두부"));
+
+        List<RecipeRecommendationResponse> responses = recommend(List.of(1L));
+
+        assertThat(responses)
+                .extracting(RecipeRecommendationResponse::recipeId)
+                .containsExactly(1L);
     }
 
     @Test
