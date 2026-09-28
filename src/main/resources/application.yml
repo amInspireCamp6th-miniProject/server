@@ -1,6 +1,10 @@
 spring:
   application:
     name: server
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   # DB 접속 정보는 환경변수로 주입합니다. (값을 이 파일에 직접 쓰지 않음)
   # 로컬에서는 application-local.yml(커밋 금지)을 만들어 덮어써도 됩니다.
   datasource:
@@ -33,3 +37,10 @@ auth:
     secure: ${REFRESH_COOKIE_SECURE:false}
     # 프론트와 API가 다른 도메인이면 None으로 바꾼다. (이때 secure는 반드시 true)
     same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+
+clova:
+  ocr:
+    invoke-url: ${CLOVA_OCR_INVOKE_URL:}
+    secret-key: ${CLOVA_OCR_SECRET_KEY:}
+    # 콘솔의 월 90회 제한보다 먼저 차단하는 애플리케이션 내부 안전 한도
+    monthly-limit: ${CLOVA_OCR_MONTHLY_LIMIT:80}
