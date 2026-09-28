@@ -2,6 +2,7 @@ package com.example.server.ingredient.service;
 
 import com.example.server.ingredient.domain.ExpirationPolicy;
 import com.example.server.ingredient.dto.IngredientExpirationResponse;
+import com.example.server.ingredient.dto.IngredientExpirationSummary;
 import com.example.server.ingredient.entity.Ingredient;
 import com.example.server.ingredient.repository.IngredientRepository;
 import java.util.Comparator;
@@ -28,19 +29,48 @@ public class IngredientExpirationService {
     private final ExpirationPolicy expirationPolicy;
 
     public List<IngredientExpirationResponse> findExpiring(Long userId) {
-        return findAllByUserId(userId).stream()
-                .filter(ingredient -> expirationPolicy.isExpiring(ingredient.getExpirationDate()))
+        return findExpiring(findAllByUserId(userId));
+    }
+
+    public List<IngredientExpirationResponse> findExpired(Long userId) {
+        return findExpired(findAllByUserId(userId));
+    }
+
+    public IngredientExpirationSummary summarize(Long userId) {
+        List<Ingredient> ingredients = findAllByUserId(userId);
+        List<IngredientExpirationResponse> expiringIngredients = findExpiring(ingredients);
+        return new IngredientExpirationSummary(
+                ingredients.size(),
+                expiringIngredients,
+                countExpired(ingredients));
+    }
+
+    private List<IngredientExpirationResponse> findExpiring(List<Ingredient> ingredients) {
+        return ingredients.stream()
+                .filter(this::isExpiring)
                 .map(this::toResponse)
                 .sorted(EXPIRING_ORDER)
                 .toList();
     }
 
-    public List<IngredientExpirationResponse> findExpired(Long userId) {
-        return findAllByUserId(userId).stream()
-                .filter(ingredient -> expirationPolicy.isExpired(ingredient.getExpirationDate()))
+    private List<IngredientExpirationResponse> findExpired(List<Ingredient> ingredients) {
+        return ingredients.stream()
+                .filter(this::isExpired)
                 .map(this::toResponse)
                 .sorted(EXPIRED_ORDER)
                 .toList();
+    }
+
+    private long countExpired(List<Ingredient> ingredients) {
+        return ingredients.stream().filter(this::isExpired).count();
+    }
+
+    private boolean isExpiring(Ingredient ingredient) {
+        return expirationPolicy.isExpiring(ingredient.getExpirationDate());
+    }
+
+    private boolean isExpired(Ingredient ingredient) {
+        return expirationPolicy.isExpired(ingredient.getExpirationDate());
     }
 
     private List<Ingredient> findAllByUserId(Long userId) {
