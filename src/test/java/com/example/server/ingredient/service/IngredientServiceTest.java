@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.example.server.ingredient.dto.IngredientCreateRequest;
+import com.example.server.ingredient.dto.IngredientImageData;
 import com.example.server.ingredient.dto.IngredientResponse;
 import com.example.server.ingredient.dto.IngredientUpdateRequest;
 import com.example.server.ingredient.entity.Ingredient;
@@ -111,6 +112,46 @@ class IngredientServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("errorCode")
                 .isEqualTo(IngredientErrorCode.INGREDIENT_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("본인 식재료 이미지를 조회한다")
+    void findIngredientImage() {
+        byte[] imageData = {(byte) 0x89, 0x50, 0x4E, 0x47};
+        Ingredient ingredient = Ingredient.create(1L, createRequest());
+        ingredient.updateImage(imageData, "image/png", "tofu.png");
+        given(ingredientRepository.findByIdAndUserId(10L, 1L))
+                .willReturn(Optional.of(ingredient));
+
+        IngredientImageData result = ingredientService.findImage(1L, 10L);
+
+        assertThat(result.data()).containsExactly(imageData);
+        assertThat(result.contentType()).isEqualTo("image/png");
+        assertThat(result.fileName()).isEqualTo("tofu.png");
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 식재료 이미지는 조회할 수 없다")
+    void cannotFindAnotherUsersIngredientImage() {
+        given(ingredientRepository.findByIdAndUserId(10L, 2L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> ingredientService.findImage(2L, 10L))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(IngredientErrorCode.INGREDIENT_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("식재료에 이미지가 없으면 이미지 미존재 오류를 반환한다")
+    void cannotFindMissingIngredientImage() {
+        Ingredient ingredient = Ingredient.create(1L, createRequest());
+        given(ingredientRepository.findByIdAndUserId(10L, 1L))
+                .willReturn(Optional.of(ingredient));
+
+        assertThatThrownBy(() -> ingredientService.findImage(1L, 10L))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(IngredientErrorCode.INGREDIENT_IMAGE_NOT_FOUND);
     }
 
     @Test

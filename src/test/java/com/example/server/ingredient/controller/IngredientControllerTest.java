@@ -9,9 +9,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.server.ingredient.dto.IngredientCreateRequest;
+import com.example.server.ingredient.dto.IngredientImageData;
 import com.example.server.ingredient.dto.IngredientResponse;
 import com.example.server.ingredient.dto.IngredientUpdateRequest;
 import com.example.server.ingredient.entity.StorageType;
@@ -29,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.server.global.security.WithLoginUser;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -109,6 +113,45 @@ class IngredientControllerTest {
     }
 
     @Test
+    @DisplayName("본인 식재료 이미지를 바이너리로 조회한다")
+    void findIngredientImage() throws Exception {
+        byte[] imageData = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
+        given(ingredientService.findImage(1L, 10L))
+                .willReturn(new IngredientImageData(imageData, "image/jpeg", "tofu.jpg"));
+
+        mockMvc.perform(get("/api/v1/ingredients/{ingredientId}/image", 10L))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.IMAGE_JPEG))
+                .andExpect(header().longValue(HttpHeaders.CONTENT_LENGTH, imageData.length))
+                .andExpect(content().bytes(imageData));
+
+        verify(ingredientService).findImage(1L, 10L);
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 식재료 이미지는 404를 반환한다")
+    void cannotFindAnotherUsersIngredientImage() throws Exception {
+        given(ingredientService.findImage(1L, 999L))
+                .willThrow(new BusinessException(IngredientErrorCode.INGREDIENT_NOT_FOUND));
+
+        mockMvc.perform(get("/api/v1/ingredients/{ingredientId}/image", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("INGREDIENT_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("식재료에 이미지가 없으면 404를 반환한다")
+    void returnNotFoundWhenIngredientHasNoImage() throws Exception {
+        given(ingredientService.findImage(1L, 10L))
+                .willThrow(new BusinessException(IngredientErrorCode.INGREDIENT_IMAGE_NOT_FOUND));
+
+        mockMvc.perform(get("/api/v1/ingredients/{ingredientId}/image", 10L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("INGREDIENT_IMAGE_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("식재료 이미지를 찾을 수 없습니다."));
+    }
+
+    @Test
     @DisplayName("없는 식재료를 조회하면 공통 형식으로 404를 반환한다")
     void returnNotFoundErrorResponse() throws Exception {
         given(ingredientService.findById(1L, 999L))
@@ -175,6 +218,7 @@ class IngredientControllerTest {
                 LocalDate.of(2026, 9, 25),
                 StorageType.REFRIGERATED,
                 LocalDateTime.of(2026, 9, 22, 9, 0),
+                null,
                 null);
     }
 }

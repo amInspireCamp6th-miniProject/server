@@ -1,6 +1,7 @@
 package com.example.server.ingredient.service;
 
 import com.example.server.ingredient.dto.IngredientCreateRequest;
+import com.example.server.ingredient.dto.IngredientImageData;
 import com.example.server.ingredient.dto.IngredientResponse;
 import com.example.server.ingredient.dto.IngredientUpdateRequest;
 import com.example.server.ingredient.entity.Ingredient;
@@ -38,6 +39,16 @@ public class IngredientService {
 
     public IngredientResponse findById(Long userId, Long ingredientId) {
         return IngredientResponse.from(findOwnedIngredient(userId, ingredientId));
+    }
+
+    public IngredientImageData findImage(Long userId, Long ingredientId) {
+        Ingredient ingredient = findOwnedIngredient(userId, ingredientId);
+        byte[] imageData = ingredient.getImageData();
+        if (imageData == null || imageData.length == 0) {
+            throw new BusinessException(IngredientErrorCode.INGREDIENT_IMAGE_NOT_FOUND);
+        }
+        return new IngredientImageData(
+                imageData, ingredient.getImageContentType(), ingredient.getImageFileName());
     }
 
     @Transactional

@@ -18,7 +18,8 @@ public record IngredientResponse(
         LocalDate expirationDate,
         StorageType storageType,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt) {
+        LocalDateTime updatedAt,
+        String imageUrl) {
 
     /** 엔티티를 API 응답 DTO로 변환한다. */
     public static IngredientResponse from(Ingredient ingredient) {
@@ -33,6 +34,15 @@ public record IngredientResponse(
                 ingredient.getExpirationDate(),
                 ingredient.getStorageType(),
                 ingredient.getCreatedAt(),
-                ingredient.getUpdatedAt());
+                ingredient.getUpdatedAt(),
+                createImageUrl(ingredient));
+    }
+
+    private static String createImageUrl(Ingredient ingredient) {
+        byte[] imageData = ingredient.getImageData();
+        if (imageData == null || imageData.length == 0) {
+            return null;
+        }
+        return "/api/v1/ingredients/" + ingredient.getId() + "/image";
     }
 }
